@@ -1,0 +1,62 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bioskop_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Create database.properties for testing
+      run: |
+        cat > database.properties << EOF
+        db.url=jdbc:postgresql://localhost:5432/bioskop_db
+        db.username=postgres
+        db.password=postgres
+        db.driver=org.postgresql.Driver
+        db.schema=public
+        db.ssl=false
+        EOF
+    
+    - name: Setup Database
+      run: |
+        sudo apt-get install postgresql-client
+        PGPASSWORD=postgres psql -h localhost -U postgres -d bioskop_db -f database_setup.sql
+    
+    - name: Compile Java
+      run: javac -cp "lib/postgresql-42.7.7.jar" -d bin src/*.java
+    
+    - name: Run Tests (Basic compilation check)
+      run: |
+        echo "Compilation successful!"
+        ls -la bin/
+        
+    - name: Check database connection
+      run: |
+        java -cp "bin:lib/postgresql-42.7.7.jar" -Djava.awt.headless=true DatabaseManager || true

@@ -1,0 +1,19 @@
+# Konfigurasi Database PostgreSQL
+# Rename file ini menjadi 'database.properties' dan sesuaikan dengan setting PostgreSQL Anda
+
+# Database Connection Settings
+db.url=jdbc:postgresql://localhost:5432/bioskop_db
+db.username=postgres
+db.password=your_password_here
+db.driver=org.postgresql.Driver
+
+# Connection Pool Settings (optional)
+db.pool.initial=5
+db.pool.max=20
+db.pool.timeout=30000
+
+# Database Schema
+db.schema=public
+
+# SSL Settings (optional)
+db.ssl=false
